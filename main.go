@@ -1,3 +1,4 @@
+//Simple daytime server with go routines
 package main
 
 import (
@@ -10,9 +11,9 @@ import (
 )
 
 const (
-	version string = "0.2"
+	version string = "0.3"
 	address string = "127.0.0.1"
-	port    string = "2055"
+	port    string = "3333"
 )
 
 func print_help() {
@@ -21,11 +22,13 @@ func print_help() {
 	os.Exit(0)
 }
 
-func handleConnection(conn *net.TCPConn) error {
+// Handles connection, returns date to a socket and status via a channel
+func handleConnection(conn *net.TCPConn, c chan string) error {
 	log.Printf("New connection from %s", conn.RemoteAddr().String())
 	defer conn.Close()
 	dateTime := fmt.Sprintf("%s\n", time.Now().Format(time.RFC1123))
 	_, err := conn.Write([]byte(dateTime))
+	c <- fmt.Sprintf("done serving %s", conn.RemoteAddr().String())
 	return err
 }
 
@@ -55,12 +58,13 @@ func main() {
 	}
 
 	log.Print("Listening on ", connString)
-
+	c := make(chan string)
 	for {
 		conn, err := ln.AcceptTCP()
 		if err != nil {
 			log.Fatal(err)
 		}
-		go handleConnection(conn)
+		go handleConnection(conn, c)
+		log.Print(<-c)
 	}
 }
