@@ -1,5 +1,7 @@
 # Godaytime
 
+[![Build Status](https://travis-ci.org/tdi/godaytime.svg?branch=master)](https://travis-ci.org/tdi/godaytime)
+
 This is intended as an example for Computer Networks 2 class at Poznań University of Technology. Mostly usable by my students. Godaytime lousy implements Daytime protocol from [RFC867](https://tools.ietf.org/html/rfc867).
 
 
