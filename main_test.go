@@ -11,7 +11,6 @@ import (
 const connstring = "localhost:3333"
 
 func TestUDPServer(t *testing.T) {
-	// connstring := "localhost:3333"
 	go setupUDPServer(connstring)
 	conn, err := net.Dial("udp4", connstring)
 	if err != nil {
@@ -32,7 +31,6 @@ func TestUDPServer(t *testing.T) {
 }
 
 func TestTCPServer(t *testing.T) {
-	connstring := "localhost:3333"
 	go setupTCPServer(connstring)
 	conn, err := net.Dial("tcp", connstring)
 	if err != nil {
