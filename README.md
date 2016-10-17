@@ -11,10 +11,10 @@ go get -u github.com/tdi/godaytime
 
 ## Usage 
 ```
-godaytime [-h] [-H HOSTNAME] [-p PORT]
+godaytime [-h] [-H HOSTNAME] [-p PORT] [-u]
 ```
 
-By default godaytime listens on port localhost:3333. 
+By default godaytime listens on localhost:3333 TCP. `-u` flag makes the server listen on UDP port. 
 
 ## Example run 
 
