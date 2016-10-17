@@ -41,13 +41,14 @@ func handleUDPClient(ln *net.UDPConn, clientAddress *net.UDPAddr, c chan string)
 	c <- fmt.Sprintf("done serving %s", clientAddress)
 	return
 }
+
 func setupUDPServer(connString string) {
 	listenAddress, err := net.ResolveUDPAddr("udp4", connString)
 	if err != nil {
 		log.Fatal(err)
 	}
-	ln, err := net.ListenUDP("udp", listenAddress)
-	defer ln.Close()
+	conn, err := net.ListenUDP("udp", listenAddress)
+	defer conn.Close()
 
 	if err != nil {
 		log.Fatal(err)
@@ -56,11 +57,12 @@ func setupUDPServer(connString string) {
 	c := make(chan string)
 	buf := make([]byte, 1024)
 	for {
-		_, clientAddress, err := ln.ReadFromUDP(buf)
+		_, clientAddress, err := conn.ReadFromUDP(buf)
+		log.Printf("New datagram from %s", clientAddress)
 		if err != nil {
 			log.Fatal(err)
 		}
-		go handleUDPClient(ln, clientAddress, c)
+		go handleUDPClient(conn, clientAddress, c)
 		log.Print(<-c)
 	}
 	return

@@ -8,6 +8,29 @@ import (
 	"time"
 )
 
+const connstring = "localhost:3333"
+
+func TestUDPServer(t *testing.T) {
+	// connstring := "localhost:3333"
+	go setupUDPServer(connstring)
+	conn, err := net.Dial("udp4", connstring)
+	if err != nil {
+		t.Error("Expected to connect to ", connstring)
+	}
+	_, err = conn.Write([]byte("Give me date server!\n"))
+	if err != nil {
+		t.Error("Sending the datagram failed")
+	}
+	status, err := bufio.NewReader(conn).ReadString('\n')
+	if err != nil {
+		t.Error("No data received from server", err)
+	}
+	parsed, err := time.Parse(time.RFC1123, strings.Trim(status, "\n"))
+	if err != nil {
+		t.Error("Parse problem", parsed)
+	}
+}
+
 func TestTCPServer(t *testing.T) {
 	connstring := "localhost:3333"
 	go setupTCPServer(connstring)
