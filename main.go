@@ -23,7 +23,7 @@ func print_help() {
 }
 
 // Handles connection, returns date to a socket and status via a channel
-func handleConnection(conn *net.TCPConn, c chan string) error {
+func handleTCPConnection(conn *net.TCPConn, c chan string) error {
 	log.Printf("New connection from %s", conn.RemoteAddr().String())
 	defer conn.Close()
 	dateTime := fmt.Sprintf("%s\n", time.Now().Format(time.RFC1123))
@@ -32,20 +32,42 @@ func handleConnection(conn *net.TCPConn, c chan string) error {
 	return err
 }
 
-func main() {
-
-	addressFlag := flag.String("H", address, "address to listen on default: localhost")
-	portFlag := flag.String("p", port, "port to listen on, default: 2055")
-	helpFlag := flag.Bool("h", false, "help message")
-	flag.Parse()
-
-	if *helpFlag != false {
-		print_help()
+func handleUDPClient(ln *net.UDPConn, clientAddress *net.UDPAddr, c chan string) {
+	dateTime := fmt.Sprintf("%s\n", time.Now().Format(time.RFC1123))
+	_, err := ln.WriteToUDP([]byte(dateTime), clientAddress)
+	if err != nil {
+		log.Fatal(err)
 	}
+	c <- fmt.Sprintf("done serving %s", clientAddress)
+	return
+}
+func setupUDPServer(connString string) {
+	listenAddress, err := net.ResolveUDPAddr("udp4", connString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ln, err := net.ListenUDP("udp", listenAddress)
+	defer ln.Close()
 
-	connString := *addressFlag + ":" + *portFlag
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Print("Listening on ", connString)
+	c := make(chan string)
+	buf := make([]byte, 1024)
+	for {
+		_, clientAddress, err := ln.ReadFromUDP(buf)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go handleUDPClient(ln, clientAddress, c)
+		log.Print(<-c)
+	}
+	return
+}
+func setupTCPServer(connString string) {
+
 	listenAddress, err := net.ResolveTCPAddr("tcp4", connString)
-
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +86,27 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		go handleConnection(conn, c)
+		go handleTCPConnection(conn, c)
 		log.Print(<-c)
 	}
+	return
+}
+
+func main() {
+
+	addressFlag := flag.String("H", address, "address to listen on default: localhost")
+	portFlag := flag.String("p", port, "port to listen on, default: 2055")
+	helpFlag := flag.Bool("h", false, "help message")
+	protoFlag := flag.Bool("u", false, "listens on UDP")
+	flag.Parse()
+
+	if *helpFlag != false {
+		print_help()
+	}
+
+	connString := *addressFlag + ":" + *portFlag
+	if *protoFlag != false {
+		setupUDPServer(connString)
+	}
+	setupTCPServer(connString)
 }
