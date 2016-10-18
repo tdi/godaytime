@@ -28,6 +28,10 @@ func TestUDPServer(t *testing.T) {
 	if err != nil {
 		t.Error("Parse problem", parsed)
 	}
+	now := time.Now()
+	if !now.Truncate(time.Hour).Equal(parsed.Truncate(time.Hour)) {
+		t.Error("Dates differ", now.Truncate(time.Hour), parsed.Truncate(time.Hour))
+	}
 }
 
 func TestTCPServer(t *testing.T) {
@@ -44,9 +48,8 @@ func TestTCPServer(t *testing.T) {
 	if err != nil {
 		t.Error("Parse problem", parsed)
 	}
-	// now := time.Now()
-	// Travis says failed here ever though it works locally
-	// if now.Truncate(time.Hour) != parsed.Truncate(time.Hour) {
-	// 	t.Error("Dates differ", now.Truncate(time.Hour), parsed.Truncate(time.Hour))
-	// }
+	now := time.Now()
+	if !now.Truncate(time.Hour).Equal(parsed.Truncate(time.Hour)) {
+		t.Error("Dates differ", now.Truncate(time.Hour), parsed.Truncate(time.Hour))
+	}
 }
