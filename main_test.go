@@ -12,6 +12,7 @@ const connstring = "localhost:3333"
 
 func TestUDPServer(t *testing.T) {
 	go setupUDPServer(connstring)
+	time.Sleep(2 * time.Second)
 	conn, err := net.Dial("udp4", connstring)
 	if err != nil {
 		t.Error("Expected to connect to ", connstring)
