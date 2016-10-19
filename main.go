@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	version string = "0.3"
+	version string = "0.4"
 	address string = "127.0.0.1"
 	port    string = "3333"
 )
 
-func print_help() {
+func printHelp() {
 	fmt.Printf("go-daytime version: %s\n", version)
 	fmt.Println("usage: go-daytime [-h] [-H HOST_NAME] [-p PORT]")
 	os.Exit(0)
@@ -32,6 +32,7 @@ func handleTCPConnection(conn *net.TCPConn, c chan string) error {
 	return err
 }
 
+// handleUDPClient handles a UDP daytime response
 func handleUDPClient(ln *net.UDPConn, clientAddress *net.UDPAddr, c chan string) {
 	dateTime := fmt.Sprintf("%s\n", time.Now().Format(time.RFC1123))
 	_, err := ln.WriteToUDP([]byte(dateTime), clientAddress)
@@ -65,22 +66,19 @@ func setupUDPServer(connString string) {
 		go handleUDPClient(conn, clientAddress, c)
 		log.Print(<-c)
 	}
-	return
 }
-func setupTCPServer(connString string) {
 
+func setupTCPServer(connString string) {
 	listenAddress, err := net.ResolveTCPAddr("tcp4", connString)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	ln, err := net.ListenTCP("tcp", listenAddress)
 	defer ln.Close()
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	log.Print("Listening on ", connString)
 	c := make(chan string)
 	for {
@@ -91,7 +89,6 @@ func setupTCPServer(connString string) {
 		go handleTCPConnection(conn, c)
 		log.Print(<-c)
 	}
-	return
 }
 
 func main() {
@@ -103,7 +100,7 @@ func main() {
 	flag.Parse()
 
 	if *helpFlag != false {
-		print_help()
+		printHelp()
 	}
 
 	connString := *addressFlag + ":" + *portFlag
